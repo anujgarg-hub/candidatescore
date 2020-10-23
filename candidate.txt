@@ -1,0 +1,77 @@
+const express   = require('express');
+const pool      = require('./pool');
+const router    = express.Router();
+
+
+
+router.post('/addcandidate',function(req,res,next){
+    pool.query('insert into candidate(name , email) values(?,?)',[req.body.name , req.body.email],function(err,result){
+        console.log(req.body)
+        if(err)
+        {
+            return res.status(500).json([])
+        }
+        else
+        {
+            return res.status(200).json(result)
+        }
+    })
+})
+
+
+router.post('/score',function(req,res,next){
+    var score =parseInt(req.body.test1 + req.body.test2 + req.body.test3) ;
+    var avgScore = (req.body.test1 + req.body.test2 + req.body.test3)/3 ;
+    pool.query('insert into testscore(candidate,test1,test2,test3,score,avgscore) values(?,?,?,?,?,?)',[req.body.candidate,req.body.test1,req.body.test2,req.body.test3,score,avgScore],function(err,result){
+        if(err)
+        {
+            return res.status(500).json()
+        }
+        else
+        {
+            return res.status(200).json({
+                message:'score is '+score + 'And '+' average score is '+avgScore +'.'
+            })            
+        }        
+           
+    })
+})
+
+router.get('/maxscore',function(req,res,next){
+    pool.query('select candidate from testscore order by score desc limit 1',function(err,result){
+        if(err)
+        {
+            console.log(err)
+            return res.status(500).json([])
+        }
+        else
+        {
+            return res.status(200).json({
+                result:result
+            })
+        }
+
+    })
+})
+
+
+
+router.get('/avgscore',function(req,res,next){
+    pool.query('select avgscore as AverageScore from testscore',function(err,result){
+        if(err)
+        {
+            console.log(err)
+            return res.status(500).json([])
+        }
+        else
+        {
+            return res.status(200).json({
+                result:result
+            })
+        }
+
+    })
+})
+
+
+module.exports = router;
